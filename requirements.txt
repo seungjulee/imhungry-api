@@ -1,4 +1,6 @@
 Flask
+request
 oauth2==1.0
 httplib2==0.9
-
+lxml
+BeautifulSoup
