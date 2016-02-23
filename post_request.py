@@ -1,6 +1,12 @@
 from flask import Flask, jsonify, make_response, request, current_app
+import os
 app = Flask(__name__)
-app.debug = True
+
+IS_PRODUCTION = (os.getenv('PYTHON_ENV', False) == "production")
+
+if not IS_PRODUCTION:
+    app.debug = True
+
 import argparse
 import json
 import pprint
@@ -9,7 +15,6 @@ import urllib
 import urllib2
 import oauth2
 import requests
-import os
 from lxml import html
 from bs4 import BeautifulSoup
 
@@ -43,7 +48,6 @@ def make_request(credentials, host, path, url_params=None):
     url_params = url_params or {}
     url = 'https://{0}{1}?'.format(host, urllib.quote(path.encode('utf8')))
 
-    # consumer = oauth2.Consumer(CONSUMER_KEY, CONSUMER_SECRET)
     consumer = oauth2.Consumer(str(credentials['CONSUMER_KEY']), str(credentials['CONSUMER_SECRET']))
 
     oauth_request = oauth2.Request(
@@ -55,12 +59,9 @@ def make_request(credentials, host, path, url_params=None):
             'oauth_timestamp': oauth2.generate_timestamp(),
             'oauth_token': str(credentials['TOKEN']),
             'oauth_consumer_key': str(credentials['CONSUMER_KEY'])
-            # 'oauth_token': TOKEN,
-            # 'oauth_consumer_key': CONSUMER_KEY
+
         }
     )
-
-    #token = oauth2.Token(TOKEN, TOKEN_SECRET)
     token = oauth2.Token(str(credentials['TOKEN']), str(credentials['TOKEN_SECRET']))
     oauth_request.sign_request(
         oauth2.SignatureMethod_HMAC_SHA1(), consumer, token)
@@ -182,34 +183,6 @@ def query_api(credentials, term, location):
     data['businesses'] = records
 
     return json.dumps(data)
-
-# def jsonify_business_data(business, photo_urls, error_code):
-#     data = {}
-
-#     data['business_id'] = business['id']
-
-#     data['business_name'] = business['name']
-
-#     business_location = business['location']
-#     data['display_address'] = business_location['display_address']
-
-#     data['coordinate'] = business_location['coordinate']
-
-#     data['business_url'] = business['url']
-
-#     data['rating_img_url'] = business['rating_img_url']
-
-#     data['photo_urls'] = photo_urls
-
-#     json_data = json.dumps(data)
-
-#     return json_data
-
-#@app.route("/")
-#def hello():
-#    return '<form action="/echo" method="POST"><input name="text"><input type="submit" value="Echo"></form>'
-#@app.route("/echo")#, methods=[''])
-#def echo():
 
 def get_credentials(credential_file_path):
     error_code = 200
