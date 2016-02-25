@@ -247,7 +247,7 @@ def main():
     with open('credentials.json') as data_file:
         credentials = json.load(data_file)
 
-    error_code = None
+    json_data, error_code = None, None
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-q', '--term', dest='term', default=request.args.get("term", None),
