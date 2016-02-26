@@ -1,6 +1,5 @@
 flask
 oauth2==1.0
 httplib2==0.9
-git+git://github.com/aglyzov/lxml.git@cffi#egg=lxml-cffi
 requests
 beautifulsoup4
