@@ -6,7 +6,7 @@ IS_PRODUCTION = (os.getenv('PYTHON_ENV', False) == "production")
 
 if not IS_PRODUCTION:
     app.debug = True
-
+import gc
 import argparse
 import json
 import pprint
@@ -15,7 +15,6 @@ import urllib
 import urllib2
 import oauth2
 import requests
-from lxml import html
 from bs4 import BeautifulSoup
 
 # Util for X-Origin
@@ -25,7 +24,7 @@ from functools import update_wrapper
 API_HOST = 'api.yelp.com'
 DEFAULT_TERM = 'dinner'
 DEFAULT_LOCATION = 'San Francisco, CA'
-SEARCH_LIMIT = 2
+SEARCH_LIMIT = 5
 PHOTO_LIMIT = 3
 SEARCH_PATH = '/v2/search/'
 BUSINESS_PATH = '/v2/business/'
@@ -112,19 +111,22 @@ def get_photo_box_images(url_prefix, business_id, PHOTO_LIMIT):
     page = requests.get(photo_box_url)
     if not page:
         print (u'No photo box page for {0} found.'.format(business_id))
-        return
+        return (u'No photo box page for {0} found.'.format(business_id))
 
     soup = BeautifulSoup(page.text, 'html.parser')
     # s = soup.find_all("img", class_="photo-box-img")
     photo_sources = soup.findAll("img",{"class":"photo-box-img", "src":True, "height":"226"})
     if not photo_sources:
         print (u'No photo box sources for {0} found.'.format(business_id))
-        return
+        return (u'No photo box sources for {0} found.'.format(business_id))
 
     photo_urls = []
     for i, photo_source in enumerate(photo_sources):
         if i < PHOTO_LIMIT:
-            photo_urls.append(''.join(['http:', photo_source['src']]))
+            photo_urls.append(''.join(['https:', photo_source['src']]))
+
+    # Prevent memory leak
+    soup.decompose()
     return photo_urls
 
 def query_api(credentials, term, location):
@@ -183,20 +185,6 @@ def query_api(credentials, term, location):
     data['businesses'] = records
 
     return json.dumps(data)
-
-def get_credentials(credential_file_path):
-    error_code = 200
-    credentials = {}
-
-    try:
-        with open(credential_file_path) as data_file:
-            credentials = json.load(data_file)
-        f.close()
-    except IOError:
-        error_code = 400
-        sys.exit("Could not read file:", credential_file_path)
-    finally:
-        return credentials, error_code
 
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
@@ -264,6 +252,7 @@ def main():
         error_code = error.code
         sys.exit('Encountered HTTP error {0}. Abort program.'.format(error.code))
     finally:
+        gc.collect()
         return json_data, error_code
 
 if __name__ == "__main__":
