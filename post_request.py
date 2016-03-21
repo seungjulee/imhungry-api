@@ -1,11 +1,5 @@
 from flask import Flask, jsonify, make_response, request, current_app
 import os
-app = Flask(__name__)
-
-IS_PRODUCTION = (os.getenv('PYTHON_ENV', False) == "production")
-
-if not IS_PRODUCTION:
-    app.debug = True
 import gc
 import argparse
 import json
@@ -16,22 +10,9 @@ import urllib2
 import oauth2
 import requests
 from bs4 import BeautifulSoup
-
 # Util for X-Origin
 from datetime import timedelta
 from functools import update_wrapper
-
-API_HOST = 'api.yelp.com'
-DEFAULT_TERM = 'dinner'
-DEFAULT_LOCATION = 'San Francisco, CA'
-SEARCH_LIMIT = 5
-PHOTO_LIMIT = 3
-SEARCH_PATH = '/v2/search/'
-BUSINESS_PATH = '/v2/business/'
-
-PHOTO_BOX_PATH = 'http://www.yelp.com/biz_photos/'
-
-CREDENTIAL_FILE = 'credentials.json'
 
 def make_request(credentials, host, path, url_params=None):
     """Prepares OAuth authentication and sends the request to the API.
@@ -151,35 +132,24 @@ def query_api(credentials, term, location):
     records = []
     # Get business information and photo box images for each businesses
     for rank in range(min(SEARCH_LIMIT, len(businesses))):
-
         # Get business id
         business_id = businesses[rank]['id']
 
-        # print(business_id)
         print ('Querying business info for "{0}" ...'.format(business_id))
-
         if business_id:
             business = get_business(credentials, business_id)
-
             # Get images in photo box for current business
             photo_urls = get_photo_box_images(PHOTO_BOX_PATH, business_id, PHOTO_LIMIT)
             if photo_urls:
                 record = {}
                 record['business_id'] = business['id']
-
                 record['business_name'] = business['name']
-
                 business_location = business['location']
                 record['display_address'] = business_location['display_address']
-
                 record['coordinate'] = business_location['coordinate']
-
                 record['business_url'] = business['url']
-
                 record['rating_img_url'] = business['rating_img_url']
-
                 record['photo_urls'] = photo_urls
-
                 records.append(record)
 
     data['businesses'] = records
@@ -256,5 +226,21 @@ def main():
         return json_data, error_code
 
 if __name__ == "__main__":
+    # TODO: make these parameters as input parameters for Flask http request
+    API_HOST = 'api.yelp.com'
+    DEFAULT_TERM = 'dinner'
+    DEFAULT_LOCATION = 'San Francisco, CA'
+    SEARCH_LIMIT = 5
+    PHOTO_LIMIT = 3
+    SEARCH_PATH = '/v2/search/'
+    BUSINESS_PATH = '/v2/business/'
+    PHOTO_BOX_PATH = 'http://www.yelp.com/biz_photos/'
+    CREDENTIAL_FILE = 'credentials.json'
+    IS_PRODUCTION = (os.getenv('PYTHON_ENV', False) == "production")
+
+    app = Flask(__name__)
+
+    if not IS_PRODUCTION:
+        app.debug = True
     app.run()
-    # main()
+    main()
