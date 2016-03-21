@@ -28,7 +28,7 @@ EXPOSE  5000
 WORKDIR /src
 
 # Create credentials.json
-RUN echo "{\"CONSUMER_SECRET\": \"$CONSUMER_SECRET\", \"TOKEN\": \"$TOKEN\", \"CONSUMER_KEY\": \"$CONSUMER_KEY\", \"TOKEN_SECRET\": \"TOKEN_SECRET\"}" > credentials.list
+RUN echo "{\"CONSUMER_SECRET\": \"$CONSUMER_SECRET\", \"TOKEN\": \"$TOKEN\", \"CONSUMER_KEY\": \"$CONSUMER_KEY\", \"TOKEN_SECRET\": \"TOKEN_SECRET\"}" > credentials.json
 
 # Run
 CMD ["pypy", "post_request.py"]

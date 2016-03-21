@@ -2,8 +2,7 @@
 http://devpost.com/software/i-m-hungry
 
 # Warning!!
-This project no longer works. Yelp noticed the crawling server and blocked it. If you want to still use it for personal purposes, try Selenium. It was built over one weekend, and didn't
-have time to go through thorough test.
+This project no longer works. Yelp noticed the crawling server and blocked it. If you want to still use it for personal purposes, try Selenium. It was built over one weekend, and didn't have time to go through thorough test.
 
 ## For Development (OSX)
 ```bash
